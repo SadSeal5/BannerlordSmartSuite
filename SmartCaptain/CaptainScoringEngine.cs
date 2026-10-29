@@ -113,6 +113,21 @@ namespace BannerlordSmartSuite
                 }
             }
 
+            // 5. Survivability (Hero armor durability)
+            if (Settings.Instance.WeightCaptainSurvivability)
+            {
+                int bodyArmor = 0;
+                if (hero?.BattleEquipment != null)
+                {
+                    bodyArmor = hero.BattleEquipment[EquipmentIndex.Body].Item?.ArmorComponent?.BodyArmor ?? 0;
+                }
+                else if (agent?.SpawnEquipment != null)
+                {
+                    bodyArmor = agent.SpawnEquipment[EquipmentIndex.Body].Item?.ArmorComponent?.BodyArmor ?? 0;
+                }
+                score += bodyArmor * 0.5f;
+            }
+
             return score;
         }
 

@@ -27,11 +27,7 @@ namespace BannerlordSmartSuite
 
             try
             {
-                if (settlement.Town.BuildingsInProgress.Count == 0)
-                {
-                    SettlementNeedEvaluator.EvaluateAndEnqueue(settlement.Town);
-                }
-
+                SettlementNeedEvaluator.EvaluateAndEnqueue(settlement.Town);
                 DailyProjectEvaluator.EvaluateDailyProject(settlement.Town);
             }
             catch (Exception ex)
@@ -50,10 +46,7 @@ namespace BannerlordSmartSuite
 
             try
             {
-                if (town.BuildingsInProgress.Count == 0)
-                {
-                    SettlementNeedEvaluator.EvaluateAndEnqueue(town);
-                }
+                SettlementNeedEvaluator.EvaluateAndEnqueue(town);
             }
             catch (Exception ex)
             {

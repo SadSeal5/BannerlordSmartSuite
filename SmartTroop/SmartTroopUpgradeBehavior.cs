@@ -26,19 +26,27 @@ namespace BannerlordSmartSuite
 
         private void OnHourlyTickParty(MobileParty party)
         {
+            if (party == null || !Settings.Instance.ModEnabled || !Settings.Instance.SmartTroopUpgradeEnabled)
+                return;
+
+            if (GameStateManager.Current?.ActiveState is PartyState ||
+                GameStateManager.Current?.ActiveState is InventoryState ||
+                (ScreenManager.TopScreen != null && ScreenManager.TopScreen.GetType().Name.Contains("Party")))
+            {
+                return;
+            }
+
             if (party == MobileParty.MainParty)
             {
-                if (GameStateManager.Current?.ActiveState is PartyState ||
-                    GameStateManager.Current?.ActiveState is InventoryState ||
-                    (ScreenManager.TopScreen != null && ScreenManager.TopScreen.GetType().Name.Contains("Party")))
-                {
-                    return;
-                }
-
-                if (Settings.Instance.ModEnabled && Settings.Instance.SmartTroopUpgradeEnabled)
-                {
-                    TroopUpgradeManager.RunUpgrade();
-                }
+                TroopUpgradeManager.RunUpgradeForParty(party);
+            }
+            else if (Settings.Instance.UpgradeClanParties && party.ActualClan == Clan.PlayerClan && !party.IsGarrison)
+            {
+                TroopUpgradeManager.RunUpgradeForParty(party);
+            }
+            else if (Settings.Instance.UpgradeGarrisons && party.IsGarrison && (party.ActualClan == Clan.PlayerClan || party.CurrentSettlement?.OwnerClan == Clan.PlayerClan))
+            {
+                TroopUpgradeManager.RunUpgradeForParty(party);
             }
         }
 

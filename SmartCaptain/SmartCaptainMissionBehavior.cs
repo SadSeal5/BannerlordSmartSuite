@@ -49,6 +49,9 @@ namespace BannerlordSmartSuite
                 if (!Settings.Instance.ModEnabled || !Settings.Instance.SmartCaptainEnabled || !Settings.Instance.MidBattleSuccession)
                     return;
 
+                if (ShouldSkipMission())
+                    return;
+
                 if (affectedAgent == null || !affectedAgent.IsHero)
                     return;
 
@@ -120,8 +123,8 @@ namespace BannerlordSmartSuite
                                 var mount = nextCaptain.MountAgent;
                                 if (mount != null)
                                 {
-                                    nextCaptain.Mount(mount);
-                                    mount.FadeOut(false, false);
+                                    nextCaptain.Mount(null);
+                                    mount.FadeOut(false, true);
                                 }
                             }
                             catch {}
@@ -151,6 +154,40 @@ namespace BannerlordSmartSuite
             _initialAutoAssignDone = false;
         }
 
+        private bool ShouldSkipMission()
+        {
+            if (!Settings.Instance.ExcludeCivilianAndArenaMissions)
+                return false;
+
+            Mission mission = Mission.Current ?? Mission;
+            if (mission == null)
+                return true;
+
+            if (!mission.IsFieldBattle && !mission.IsSiegeBattle && !mission.HasMissionBehavior<BattleDeploymentMissionController>())
+                return true;
+
+            if (mission.MissionBehaviors != null)
+            {
+                for (int i = 0; i < mission.MissionBehaviors.Count; i++)
+                {
+                    var behavior = mission.MissionBehaviors[i];
+                    if (behavior == null) continue;
+
+                    string typeName = behavior.GetType().Name;
+                    if (typeName == "HideoutMissionController" ||
+                        typeName == "HideoutAmbushMissionController" ||
+                        typeName == "TournamentFightMissionController" ||
+                        typeName == "ArenaPracticeFightMissionController" ||
+                        typeName == "ArenaDuelMissionController")
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private void CheckAndAssignCaptains()
         {
             if (_initialAutoAssignDone)
@@ -159,6 +196,9 @@ namespace BannerlordSmartSuite
             _initialAutoAssignDone = true;
 
             if (!Settings.Instance.ModEnabled || !Settings.Instance.SmartCaptainEnabled || !Settings.Instance.AutoAssignOnDeployment)
+                return;
+
+            if (ShouldSkipMission())
                 return;
 
             // If Order of Battle ran, captains were already assigned
@@ -217,6 +257,9 @@ namespace BannerlordSmartSuite
             if (!Settings.Instance.ModEnabled || !Settings.Instance.SmartCaptainEnabled || !Settings.Instance.DismountMountedInfantryCaptains)
                 return;
 
+            if (ShouldSkipMission())
+                return;
+
             Team playerTeam = Mission?.PlayerTeam;
             if (playerTeam == null)
                 return;
@@ -236,8 +279,8 @@ namespace BannerlordSmartSuite
                             var mount = captain.MountAgent;
                             if (mount != null)
                             {
-                                captain.Mount(mount);
-                                mount.FadeOut(false, false);
+                                captain.Mount(null);
+                                mount.FadeOut(false, true);
                             }
                         }
                         catch (Exception ex)

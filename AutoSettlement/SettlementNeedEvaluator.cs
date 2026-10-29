@@ -17,6 +17,31 @@ namespace BannerlordSmartSuite
             if (town.Settlement != null && (town.Settlement.IsUnderSiege || town.Settlement.SiegeEvent != null))
                 return;
 
+            if (Settings.Instance.EmergencyRebellionQueuePause)
+            {
+                if (town.Loyalty < 25f)
+                {
+                    if (town.BuildingsInProgress.Count > 0)
+                    {
+                        town.BuildingsInProgress.Clear();
+                        if (Settings.Instance.SettlementNotificationsEnabled)
+                        {
+                            InformationManager.DisplayMessage(new InformationMessage(
+                                $"[Smart Settlement] Construction paused at {town.Name} to address rebellion risk (Loyalty: {town.Loyalty:F0}).",
+                                Color.FromUint(0xFFFF4500)
+                            ));
+                        }
+                    }
+                    return;
+                }
+
+                if (town.Loyalty <= 35f)
+                {
+                    // While loyalty is recovering between 25 and 35, prevent queueing so daily project continues boosting loyalty
+                    return;
+                }
+            }
+
             if (town.BuildingsInProgress.Count >= Settings.Instance.MaxBuildingQueueDepth)
                 return;
 

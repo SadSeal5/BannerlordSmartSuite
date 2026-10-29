@@ -83,7 +83,7 @@ namespace BannerlordSmartSuite
             for (int f = 0; f < nFormations; f++)
             {
                 int heroIdx = assignment[f];
-                if (heroIdx >= 0 && heroIdx < nHeroes)
+                if (heroIdx >= 0 && heroIdx < nHeroes && scores[f, heroIdx] >= 0f)
                 {
                     result[targetFormations[f]] = availableHeroes[heroIdx];
                 }
@@ -163,7 +163,7 @@ namespace BannerlordSmartSuite
             for (int f = 0; f < nFormations; f++)
             {
                 int agentIdx = assignment[f];
-                if (agentIdx >= 0 && agentIdx < nAgents)
+                if (agentIdx >= 0 && agentIdx < nAgents && scores[f, agentIdx] >= 0f)
                 {
                     result[filteredFormations[f]] = filteredAgents[agentIdx];
                 }
@@ -276,7 +276,7 @@ namespace BannerlordSmartSuite
                 int col = j - 1;
                 if (row >= 0 && row < nRows)
                 {
-                    if (col < nCols && scoreMatrix[row, col] > 0)
+                    if (col < nCols && scoreMatrix[row, col] >= 0f)
                     {
                         result[row] = col;
                     }

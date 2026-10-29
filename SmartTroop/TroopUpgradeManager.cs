@@ -12,20 +12,30 @@ namespace BannerlordSmartSuite
     {
         public static int RunUpgrade()
         {
+            return RunUpgradeForParty(MobileParty.MainParty);
+        }
+
+        public static int RunUpgradeForParty(MobileParty party)
+        {
             Settings settings = Settings.Instance;
             if (settings == null || !settings.ModEnabled || !settings.SmartTroopUpgradeEnabled)
             {
                 return 0;
             }
 
-            MobileParty mainParty = MobileParty.MainParty;
-            Hero mainHero = Hero.MainHero;
-            if (mainParty == null || mainHero == null || mainParty.MemberRoster == null || mainParty.Party == null)
+            if (party == null || party.MemberRoster == null || party.Party == null)
             {
                 return 0;
             }
 
-            bool respectLocked = settings.RespectLockedTroops;
+            Hero mainHero = Hero.MainHero;
+            if (mainHero == null)
+            {
+                return 0;
+            }
+
+            bool isMain = (party == MobileParty.MainParty);
+            bool respectLocked = isMain && settings.RespectLockedTroops;
             HashSet<string> lockedTroopIds = respectLocked ? GetLockedTroopIds() : null;
             HashSet<string> lockedItemIds = respectLocked ? GetLockedInventoryIds() : null;
 
@@ -42,7 +52,7 @@ namespace BannerlordSmartSuite
                     break;
                 }
 
-                TroopRoster memberRoster = mainParty.MemberRoster;
+                TroopRoster memberRoster = party.MemberRoster;
                 int rosterCount = memberRoster.Count;
 
                 // 1. Count regular combat troops per TroopRole
@@ -130,7 +140,7 @@ namespace BannerlordSmartSuite
                         if (req != null)
                         {
                             hasCavalryTarget = true;
-                            int avail = GetAvailableHorses(mainParty, req, respectLocked, lockedItemIds);
+                            int avail = GetAvailableHorses(party, req, respectLocked, lockedItemIds);
                             if (avail <= settings.MinHorseReserve)
                             {
                                 cavalryTargetBlockedByHorses = true;
@@ -164,16 +174,21 @@ namespace BannerlordSmartSuite
                         CharacterObject target = troop.UpgradeTargets[tIdx];
                         if (target == null) continue;
 
+                        if (target.Tier > settings.MaxTroopTier)
+                        {
+                            continue;
+                        }
+
                         if (!settings.AllowBanditUpgradesWithoutPerk)
                         {
-                            bool canUpgrade = Campaign.Current?.Models?.PartyTroopUpgradeModel?.CanTroopBeUpgraded(mainParty.Party, troop, target) ?? true;
+                            bool canUpgrade = Campaign.Current?.Models?.PartyTroopUpgradeModel?.CanTroopBeUpgraded(party.Party, troop, target) ?? true;
                             if (!canUpgrade)
                             {
                                 continue;
                             }
                         }
 
-                        int targetXpCost = troop.GetUpgradeXpCost(mainParty.Party, tIdx);
+                        int targetXpCost = troop.GetUpgradeXpCost(party.Party, tIdx);
                         int readyCount = targetXpCost > 0 ? element.Xp / targetXpCost : 0;
                         readyCount = Math.Min(readyCount, element.Number);
                         if (readyCount <= 0)
@@ -188,7 +203,7 @@ namespace BannerlordSmartSuite
                         int availHorses = int.MaxValue;
                         if (reqCat != null)
                         {
-                            availHorses = GetAvailableHorses(mainParty, reqCat, respectLocked, lockedItemIds);
+                            availHorses = GetAvailableHorses(party, reqCat, respectLocked, lockedItemIds);
                             if (availHorses <= settings.MinHorseReserve)
                             {
                                 continue;
@@ -196,7 +211,7 @@ namespace BannerlordSmartSuite
                         }
 
                         // Check gold cost
-                        int unitGoldCost = troop.GetUpgradeGoldCost(mainParty.Party, tIdx);
+                        int unitGoldCost = troop.GetUpgradeGoldCost(party.Party, tIdx);
                         if (unitGoldCost > 0 && (mainHero.Gold - unitGoldCost < settings.MinGoldReserve))
                         {
                             continue;
@@ -244,8 +259,12 @@ namespace BannerlordSmartSuite
                             int totalXpCost = Math.Min(element.Xp, countToUpgrade * bestXpCost);
                             int totalGold = countToUpgrade * bestGoldCost;
 
-                            memberRoster.AddToCounts(troop, -countToUpgrade, false, 0, -totalXpCost);
-                            memberRoster.AddToCounts(bestTarget, countToUpgrade, false, 0, 0);
+                            int healthyCount = Math.Max(0, element.Number - element.WoundedNumber);
+                            int healthyUpgraded = Math.Min(countToUpgrade, healthyCount);
+                            int woundedUpgraded = countToUpgrade - healthyUpgraded;
+
+                            memberRoster.AddToCounts(troop, -countToUpgrade, false, -woundedUpgraded, -totalXpCost);
+                            memberRoster.AddToCounts(bestTarget, countToUpgrade, false, woundedUpgraded, 0);
 
                             if (totalGold > 0)
                             {
@@ -254,7 +273,7 @@ namespace BannerlordSmartSuite
 
                             if (bestReqCategory != null)
                             {
-                                ConsumeHorses(mainParty, bestReqCategory, countToUpgrade, respectLocked, lockedItemIds);
+                                ConsumeHorses(party, bestReqCategory, countToUpgrade, respectLocked, lockedItemIds);
                             }
 
                             totalUpgradedOverall += countToUpgrade;

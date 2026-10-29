@@ -67,6 +67,14 @@ namespace BannerlordSmartSuite
         [SettingPropertyGroup("1. Smart Captain")]
         public bool DismountPlayerIfInfantryCaptain { get; set; } = false;
 
+        [SettingPropertyBool("Exclude Civilian And Arena Missions", Order = 6, RequireRestart = false, HintText = "Skip captain assignment in tournaments, arena practice, tavern brawls, and hideout raids.")]
+        [SettingPropertyGroup("1. Smart Captain")]
+        public bool ExcludeCivilianAndArenaMissions { get; set; } = true;
+
+        [SettingPropertyBool("Weight Captain Survivability", Order = 7, RequireRestart = false, HintText = "Factor hero armor and durability into captain score so resilient leaders are favored.")]
+        [SettingPropertyGroup("1. Smart Captain")]
+        public bool WeightCaptainSurvivability { get; set; } = true;
+
         #endregion
 
         #region 2. Auto Settlement Builder
@@ -98,6 +106,14 @@ namespace BannerlordSmartSuite
         [SettingPropertyInteger("Max Building Queue Depth", 1, 3, "0", Order = 6, RequireRestart = false, HintText = "Maximum number of buildings allowed in the construction queue.")]
         [SettingPropertyGroup("2. Auto Settlement Builder")]
         public int MaxBuildingQueueDepth { get; set; } = 1;
+
+        [SettingPropertyBool("Emergency Rebellion Queue Pause", Order = 7, RequireRestart = false, HintText = "Automatically pause construction queues when loyalty drops below 25 to allow Festivals and Games to prevent rebellion.")]
+        [SettingPropertyGroup("2. Auto Settlement Builder")]
+        public bool EmergencyRebellionQueuePause { get; set; } = true;
+
+        [SettingPropertyDropdown("Castle Default Daily Project", Order = 8, RequireRestart = false, HintText = "Default daily project for castles when healthy.")]
+        [SettingPropertyGroup("2. Auto Settlement Builder")]
+        public Dropdown<string> CastleDefaultProject { get; set; } = new Dropdown<string>(new string[] { "Militia", "Housing", "Irrigation", "KeepCurrent" }, 0);
 
         #endregion
 
@@ -171,6 +187,18 @@ namespace BannerlordSmartSuite
         [SettingPropertyGroup("3. Smart Troop Upgrade")]
         public bool ConsumeCheapestHorsesFirst { get; set; } = true;
 
+        [SettingPropertyInteger("Max Troop Tier", 2, 6, "0", Order = 17, RequireRestart = false, HintText = "Maximum troop tier for automated upgrades to prevent excessive party wage inflation.")]
+        [SettingPropertyGroup("3. Smart Troop Upgrade")]
+        public int MaxTroopTier { get; set; } = 6;
+
+        [SettingPropertyBool("Upgrade Clan Parties", Order = 18, RequireRestart = false, HintText = "Automatically upgrade troops in other clan member parties.")]
+        [SettingPropertyGroup("3. Smart Troop Upgrade")]
+        public bool UpgradeClanParties { get; set; } = false;
+
+        [SettingPropertyBool("Upgrade Garrisons", Order = 19, RequireRestart = false, HintText = "Automatically upgrade troops in player-owned settlement garrisons.")]
+        [SettingPropertyGroup("3. Smart Troop Upgrade")]
+        public bool UpgradeGarrisons { get; set; } = false;
+
         #endregion
 
         #region 4. Auto Dual Perks
@@ -190,6 +218,10 @@ namespace BannerlordSmartSuite
         [SettingPropertyDropdown("Perk Grant Mode", Order = 3, RequireRestart = false, HintText = "Paired Choice grants the counterpart when a perk is chosen. Full Auto grants all perks matching skill requirement.")]
         [SettingPropertyGroup("4. Auto Dual Perks")]
         public Dropdown<string> PerkGrantMode { get; set; } = new Dropdown<string>(new string[] { "Paired Choice (When Picked)", "Full Auto Unlock (By Skill Level)" }, 0);
+
+        [SettingPropertyBool("Perk Notifications Enabled", Order = 4, RequireRestart = false, HintText = "Show subtle notification when dual perks are granted.")]
+        [SettingPropertyGroup("4. Auto Dual Perks")]
+        public bool PerkNotificationsEnabled { get; set; } = false;
 
         #endregion
     }

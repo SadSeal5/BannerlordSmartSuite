@@ -18,62 +18,116 @@ namespace BannerlordSmartSuite
             {
                 Building targetDaily = null;
 
-                if (town.Loyalty < Settings.Instance.LoyaltyCriticalThreshold)
+                if (town.IsCastle)
                 {
-                    targetDaily = town.Buildings.FirstOrDefault(b =>
-                        b.BuildingType.IsDailyProject &&
-                        b.BuildingType.HasEffect(BuildingEffectEnum.Loyalty));
-                }
-                else if (town.FoodStocks < Settings.Instance.FoodDeficitThreshold || (town.FoodChange < 0f && town.FoodStocks < 50f))
-                {
-                    targetDaily = town.Buildings.FirstOrDefault(b =>
-                        b.BuildingType.IsDailyProject &&
-                        (b.BuildingType.HasEffect(BuildingEffectEnum.FoodProduction) ||
-                         b.BuildingType.HasEffect(BuildingEffectEnum.FoodStock)));
+                    // Castle daily projects (Castles do not have loyalty/festivals)
+                    if (town.FoodStocks < Settings.Instance.FoodDeficitThreshold || (town.FoodChange < 0f && town.FoodStocks < 50f))
+                    {
+                        targetDaily = town.Buildings.FirstOrDefault(b =>
+                            b.BuildingType.IsDailyProject &&
+                            (b.BuildingType == DefaultBuildingTypes.CastleDailyIrrigation ||
+                             b.BuildingType.HasEffect(BuildingEffectEnum.FoodProduction) ||
+                             b.BuildingType.HasEffect(BuildingEffectEnum.FoodStock)));
+                    }
+                    else
+                    {
+                        string preferred = Settings.Instance.CastleDefaultProject?.SelectedValue ?? "Militia";
+                        switch (preferred)
+                        {
+                            case "Militia":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.CastleDailyRaiseTroops ||
+                                     b.BuildingType == DefaultBuildingTypes.CastleDailyDrills ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("troops", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("militia", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                     b.BuildingType.HasEffect(BuildingEffectEnum.Militia) ||
+                                     b.BuildingType.HasEffect(BuildingEffectEnum.ExperiencePerDay)));
+                                break;
+
+                            case "Housing":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.SettlementDailyHousing ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("housing", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                     b.BuildingType.HasEffect(BuildingEffectEnum.Prosperity)));
+                                break;
+
+                            case "Irrigation":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.CastleDailyIrrigation ||
+                                     b.BuildingType == DefaultBuildingTypes.SettlementDailyIrrigation ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("irrigation", StringComparison.OrdinalIgnoreCase) >= 0)));
+                                break;
+
+                            case "KeepCurrent":
+                            default:
+                                targetDaily = null;
+                                break;
+                        }
+                    }
                 }
                 else
                 {
-                    string preferred = Settings.Instance.DefaultDailyProject?.SelectedValue ?? "Housing";
-                    switch (preferred)
+                    // Town daily projects
+                    if (town.Loyalty < Settings.Instance.LoyaltyCriticalThreshold)
                     {
-                        case "Housing":
-                            targetDaily = town.Buildings.FirstOrDefault(b =>
-                                b.BuildingType.IsDailyProject &&
-                                (b.BuildingType == DefaultBuildingTypes.SettlementDailyHousing ||
-                                 (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("housing", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                                 b.BuildingType.HasEffect(BuildingEffectEnum.Prosperity)));
-                            break;
+                        targetDaily = town.Buildings.FirstOrDefault(b =>
+                            b.BuildingType.IsDailyProject &&
+                            b.BuildingType.HasEffect(BuildingEffectEnum.Loyalty));
+                    }
+                    else if (town.FoodStocks < Settings.Instance.FoodDeficitThreshold || (town.FoodChange < 0f && town.FoodStocks < 50f))
+                    {
+                        targetDaily = town.Buildings.FirstOrDefault(b =>
+                            b.BuildingType.IsDailyProject &&
+                            (b.BuildingType.HasEffect(BuildingEffectEnum.FoodProduction) ||
+                             b.BuildingType.HasEffect(BuildingEffectEnum.FoodStock)));
+                    }
+                    else
+                    {
+                        string preferred = Settings.Instance.DefaultDailyProject?.SelectedValue ?? "Housing";
+                        switch (preferred)
+                        {
+                            case "Housing":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.SettlementDailyHousing ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("housing", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                     b.BuildingType.HasEffect(BuildingEffectEnum.Prosperity)));
+                                break;
 
-                        case "Militia":
-                            targetDaily = town.Buildings.FirstOrDefault(b =>
-                                b.BuildingType.IsDailyProject &&
-                                (b.BuildingType == DefaultBuildingTypes.SettlementDailyTrainMilitia ||
-                                 b.BuildingType == DefaultBuildingTypes.CastleDailyRaiseTroops ||
-                                 b.BuildingType == DefaultBuildingTypes.CastleDailyDrills ||
-                                 (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("militia", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                                 b.BuildingType.HasEffect(BuildingEffectEnum.Militia)));
-                            break;
+                            case "Militia":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.SettlementDailyTrainMilitia ||
+                                     b.BuildingType == DefaultBuildingTypes.CastleDailyRaiseTroops ||
+                                     b.BuildingType == DefaultBuildingTypes.CastleDailyDrills ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("militia", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                     b.BuildingType.HasEffect(BuildingEffectEnum.Militia)));
+                                break;
 
-                        case "Irrigation":
-                            targetDaily = town.Buildings.FirstOrDefault(b =>
-                                b.BuildingType.IsDailyProject &&
-                                (b.BuildingType == DefaultBuildingTypes.SettlementDailyIrrigation ||
-                                 b.BuildingType == DefaultBuildingTypes.CastleDailyIrrigation ||
-                                 (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("irrigation", StringComparison.OrdinalIgnoreCase) >= 0)));
-                            break;
+                            case "Irrigation":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.SettlementDailyIrrigation ||
+                                     b.BuildingType == DefaultBuildingTypes.CastleDailyIrrigation ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("irrigation", StringComparison.OrdinalIgnoreCase) >= 0)));
+                                break;
 
-                        case "Festivals":
-                            targetDaily = town.Buildings.FirstOrDefault(b =>
-                                b.BuildingType.IsDailyProject &&
-                                (b.BuildingType == DefaultBuildingTypes.SettlementDailyFestivalAndGames ||
-                                 (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("festival", StringComparison.OrdinalIgnoreCase) >= 0) ||
-                                 b.BuildingType.HasEffect(BuildingEffectEnum.Loyalty)));
-                            break;
+                            case "Festivals":
+                                targetDaily = town.Buildings.FirstOrDefault(b =>
+                                    b.BuildingType.IsDailyProject &&
+                                    (b.BuildingType == DefaultBuildingTypes.SettlementDailyFestivalAndGames ||
+                                     (b.BuildingType.StringId != null && b.BuildingType.StringId.IndexOf("festival", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                     b.BuildingType.HasEffect(BuildingEffectEnum.Loyalty)));
+                                break;
 
-                        case "KeepCurrent":
-                        default:
-                            targetDaily = null;
-                            break;
+                            case "KeepCurrent":
+                            default:
+                                targetDaily = null;
+                                break;
+                        }
                     }
                 }
 

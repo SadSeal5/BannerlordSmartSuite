@@ -2,6 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 
 namespace BannerlordSmartSuite
 {
@@ -13,6 +14,7 @@ namespace BannerlordSmartSuite
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
             CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
             CampaignEvents.HeroGainedSkill.AddNonSerializedListener(this, OnHeroGainedSkill);
+            CampaignEvents.NewCompanionAdded.AddNonSerializedListener(this, OnCompanionAdded);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -33,6 +35,17 @@ namespace BannerlordSmartSuite
         private void OnNewGameCreated(CampaignGameStarter starter)
         {
             CheckAndGrantEligibleHeroes();
+        }
+
+        private void OnCompanionAdded(Hero newCompanion)
+        {
+            if (newCompanion == null || !Settings.Instance.ModEnabled || !Settings.Instance.AutoDualPerksEnabled)
+                return;
+
+            if (Settings.Instance.DualPerksApplyToCompanions)
+            {
+                CheckAndGrantAllPerks(newCompanion);
+            }
         }
 
         private void OnHeroGainedSkill(Hero hero, SkillObject skill, int change, bool shouldNotify)
@@ -92,6 +105,7 @@ namespace BannerlordSmartSuite
             if (PerkObject.All == null) return;
 
             int grantMode = Settings.Instance.PerkGrantMode?.SelectedIndex ?? 0;
+            int perksGranted = 0;
 
             if (grantMode == 0)
             {
@@ -103,6 +117,7 @@ namespace BannerlordSmartSuite
                     if (hero.GetPerkValue(perk) && !hero.GetPerkValue(perk.AlternativePerk))
                     {
                         hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                        perksGranted++;
                     }
                 }
             }
@@ -118,13 +133,23 @@ namespace BannerlordSmartSuite
                         if (!hero.GetPerkValue(perk))
                         {
                             hero.HeroDeveloper.AddPerk(perk);
+                            perksGranted++;
                         }
                         if (perk.AlternativePerk != null && perk.AlternativePerk != perk && !hero.GetPerkValue(perk.AlternativePerk))
                         {
                             hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                            perksGranted++;
                         }
                     }
                 }
+            }
+
+            if (perksGranted > 0 && Settings.Instance.PerkNotificationsEnabled)
+            {
+                InformationManager.DisplayMessage(new InformationMessage(
+                    $"[Auto Dual Perks] Granted {perksGranted} perk{(perksGranted > 1 ? "s" : "")} to {hero.Name}.",
+                    Color.FromUint(0x40E0D0FF)
+                ));
             }
         }
 
@@ -135,6 +160,7 @@ namespace BannerlordSmartSuite
 
             int grantMode = Settings.Instance.PerkGrantMode?.SelectedIndex ?? 0;
             int skillValue = hero.GetSkillValue(skill);
+            int perksGranted = 0;
 
             if (grantMode == 0)
             {
@@ -146,6 +172,7 @@ namespace BannerlordSmartSuite
                     if (hero.GetPerkValue(perk) && !hero.GetPerkValue(perk.AlternativePerk))
                     {
                         hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                        perksGranted++;
                     }
                 }
             }
@@ -161,13 +188,23 @@ namespace BannerlordSmartSuite
                         if (!hero.GetPerkValue(perk))
                         {
                             hero.HeroDeveloper.AddPerk(perk);
+                            perksGranted++;
                         }
                         if (perk.AlternativePerk != null && perk.AlternativePerk != perk && !hero.GetPerkValue(perk.AlternativePerk))
                         {
                             hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                            perksGranted++;
                         }
                     }
                 }
+            }
+
+            if (perksGranted > 0 && Settings.Instance.PerkNotificationsEnabled)
+            {
+                InformationManager.DisplayMessage(new InformationMessage(
+                    $"[Auto Dual Perks] Granted {perksGranted} perk{(perksGranted > 1 ? "s" : "")} to {hero.Name}.",
+                    Color.FromUint(0x40E0D0FF)
+                ));
             }
         }
     }
