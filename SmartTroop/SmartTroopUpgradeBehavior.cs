@@ -1,9 +1,11 @@
 using System;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
+using TaleWorlds.ScreenSystem;
 
 namespace BannerlordSmartSuite
 {
@@ -26,6 +28,13 @@ namespace BannerlordSmartSuite
         {
             if (party == MobileParty.MainParty)
             {
+                if (GameStateManager.Current?.ActiveState is PartyState ||
+                    GameStateManager.Current?.ActiveState is InventoryState ||
+                    (ScreenManager.TopScreen != null && ScreenManager.TopScreen.GetType().Name.Contains("Party")))
+                {
+                    return;
+                }
+
                 if (Settings.Instance.ModEnabled && Settings.Instance.SmartTroopUpgradeEnabled)
                 {
                     TroopUpgradeManager.RunUpgrade();
@@ -53,6 +62,13 @@ namespace BannerlordSmartSuite
         {
             if (!Settings.Instance.ModEnabled || !Settings.Instance.SmartTroopUpgradeEnabled)
                 return;
+
+            if (GameStateManager.Current?.ActiveState is PartyState ||
+                GameStateManager.Current?.ActiveState is InventoryState ||
+                (ScreenManager.TopScreen != null && ScreenManager.TopScreen.GetType().Name.Contains("Party")))
+            {
+                return;
+            }
 
             if (Input.IsKeyDown(InputKey.LeftControl) &&
                 Input.IsKeyDown(InputKey.LeftShift) &&

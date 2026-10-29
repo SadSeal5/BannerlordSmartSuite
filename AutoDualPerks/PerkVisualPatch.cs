@@ -10,9 +10,13 @@ namespace BannerlordSmartSuite
     public static class PerkVMHasAlternativeAndSelectedPatch
     {
         [HarmonyPrefix]
-        public static bool Prefix(ref bool __result)
+        public static bool Prefix(PerkVM __instance, ref bool __result)
         {
             if (!Settings.Instance.ModEnabled || !Settings.Instance.AutoDualPerksEnabled)
+                return true;
+
+            // Safe handling for capstone perks or perks without alternative
+            if (__instance == null || __instance.Perk == null || __instance.Perk.AlternativePerk == null || __instance.Perk.AlternativePerk == __instance.Perk)
                 return true;
 
             __result = false;
@@ -40,7 +44,7 @@ namespace BannerlordSmartSuite
             }
 
             Hero hero = __instance?.Hero;
-            if (hero == null || perk?.AlternativePerk == null)
+            if (hero == null || perk == null || perk.AlternativePerk == null || perk.AlternativePerk == perk)
             {
                 return;
             }

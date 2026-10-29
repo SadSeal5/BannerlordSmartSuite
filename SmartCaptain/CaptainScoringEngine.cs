@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
@@ -22,7 +23,6 @@ namespace BannerlordSmartSuite
             FormationClass mappedClass = NormalizeFormationClass(formationClass);
 
             bool hasHorse = CheckHasHorse(hero, agent);
-            bool hasRanged = CheckHasRangedWeapon(hero, agent);
 
             // 1. Equipment constraints
             if (mappedClass == FormationClass.Cavalry || mappedClass == FormationClass.HorseArcher)
@@ -33,7 +33,8 @@ namespace BannerlordSmartSuite
 
             if (mappedClass == FormationClass.Ranged || mappedClass == FormationClass.HorseArcher)
             {
-                if (!hasRanged)
+                bool allowThrown = (mappedClass != FormationClass.HorseArcher);
+                if (!CheckHasRangedWeapon(hero, agent, allowThrown))
                     return -5000f;
             }
 
@@ -87,18 +88,19 @@ namespace BannerlordSmartSuite
                 try
                 {
                     TroopUsageFlags flags = GetTroopUsageFlags(mappedClass);
-                    var captainModel = Campaign.Current?.Models?.BattleCaptainModel;
-                    List<PerkObject> explanationList = null;
+                    BattleCaptainModel captainModel = Campaign.Current?.Models?.BattleCaptainModel;
+                    if (captainModel == null && MissionGameModels.Current != null)
+                    {
+                        try
+                        {
+                            captainModel = HarmonyLib.Traverse.Create(MissionGameModels.Current).Property("BattleCaptainModel")?.GetValue<BattleCaptainModel>();
+                        }
+                        catch {}
+                    }
+                    captainModel ??= new DefaultBattleCaptainModel();
 
-                    if (captainModel != null)
-                    {
-                        captainModel.GetCaptainRatingForTroopUsages(hero, flags, out explanationList);
-                    }
-                    else
-                    {
-                        var defaultModel = new DefaultBattleCaptainModel();
-                        defaultModel.GetCaptainRatingForTroopUsages(hero, flags, out explanationList);
-                    }
+                    List<PerkObject> explanationList = null;
+                    captainModel.GetCaptainRatingForTroopUsages(hero, flags, out explanationList);
 
                     if (explanationList != null)
                     {
@@ -193,11 +195,16 @@ namespace BannerlordSmartSuite
             return false;
         }
 
-        public static bool CheckHasRangedWeapon(Hero hero, Agent agent)
+        public static bool CheckHasRangedWeapon(Hero hero, bool allowThrown = true)
+        {
+            return CheckHasRangedWeapon(hero, null, allowThrown);
+        }
+
+        public static bool CheckHasRangedWeapon(Hero hero, Agent agent, bool allowThrown = true)
         {
             if (agent != null)
             {
-                if (agent.HasAnyRangedWeaponCached)
+                if (allowThrown && agent.HasAnyRangedWeaponCached)
                     return true;
 
                 if (agent.Equipment != null)
@@ -207,7 +214,7 @@ namespace BannerlordSmartSuite
                         var item = agent.Equipment[i].Item;
                         if (item != null && (item.ItemType == ItemObject.ItemTypeEnum.Bow ||
                                              item.ItemType == ItemObject.ItemTypeEnum.Crossbow ||
-                                             item.ItemType == ItemObject.ItemTypeEnum.Thrown))
+                                             (allowThrown && item.ItemType == ItemObject.ItemTypeEnum.Thrown)))
                         {
                             return true;
                         }
@@ -221,7 +228,7 @@ namespace BannerlordSmartSuite
                         var item = agent.SpawnEquipment[i].Item;
                         if (item != null && (item.ItemType == ItemObject.ItemTypeEnum.Bow ||
                                              item.ItemType == ItemObject.ItemTypeEnum.Crossbow ||
-                                             item.ItemType == ItemObject.ItemTypeEnum.Thrown))
+                                             (allowThrown && item.ItemType == ItemObject.ItemTypeEnum.Thrown)))
                         {
                             return true;
                         }
@@ -236,7 +243,7 @@ namespace BannerlordSmartSuite
                     var item = hero.BattleEquipment[i].Item;
                     if (item != null && (item.ItemType == ItemObject.ItemTypeEnum.Bow ||
                                          item.ItemType == ItemObject.ItemTypeEnum.Crossbow ||
-                                         item.ItemType == ItemObject.ItemTypeEnum.Thrown))
+                                         (allowThrown && item.ItemType == ItemObject.ItemTypeEnum.Thrown)))
                     {
                         return true;
                     }

@@ -14,13 +14,16 @@ namespace BannerlordSmartSuite
             if (town == null || !Settings.Instance.ModEnabled || !Settings.Instance.AutoSettlementBuilderEnabled)
                 return;
 
-            if (town.BuildingsInProgress.Count > 0)
+            if (town.Settlement != null && (town.Settlement.IsUnderSiege || town.Settlement.SiegeEvent != null))
+                return;
+
+            if (town.BuildingsInProgress.Count >= Settings.Instance.MaxBuildingQueueDepth)
                 return;
 
             try
             {
                 var candidates = town.Buildings
-                    .Where(b => !b.BuildingType.IsDailyProject && b.CurrentLevel < 3 && !town.BuildingsInProgress.Contains(b))
+                    .Where(b => !b.BuildingType.IsDailyProject && b.CurrentLevel < BuildingType.MaxLevel && !town.BuildingsInProgress.Contains(b))
                     .ToList();
 
                 if (candidates.Count == 0)

@@ -53,7 +53,7 @@ namespace BannerlordSmartSuite
                     return;
 
                 Formation formation = affectedAgent.Formation;
-                if (formation == null || formation.Captain != affectedAgent)
+                if (formation == null || formation.CountOfUnits <= 0 || formation.Captain != affectedAgent)
                     return;
 
                 // The current captain of this formation fell in battle!
@@ -113,16 +113,19 @@ namespace BannerlordSmartSuite
                     // If infantry and setting requires dismounting, ensure successor is dismounted
                     if (Settings.Instance.DismountMountedInfantryCaptains && fClass == FormationClass.Infantry && nextCaptain.HasMount)
                     {
-                        try
+                        if (!nextCaptain.IsMainAgent || Settings.Instance.DismountPlayerIfInfantryCaptain)
                         {
-                            var mount = nextCaptain.MountAgent;
-                            if (mount != null)
+                            try
                             {
-                                nextCaptain.Mount(mount);
-                                mount.FadeOut(false, false);
+                                var mount = nextCaptain.MountAgent;
+                                if (mount != null)
+                                {
+                                    nextCaptain.Mount(mount);
+                                    mount.FadeOut(false, false);
+                                }
                             }
+                            catch {}
                         }
-                        catch {}
                     }
 
                     try
@@ -225,6 +228,9 @@ namespace BannerlordSmartSuite
                     Agent captain = formation.Captain;
                     if (captain != null && captain.IsActive() && captain.HasMount)
                     {
+                        if (captain.IsMainAgent && !Settings.Instance.DismountPlayerIfInfantryCaptain)
+                            continue;
+
                         try
                         {
                             var mount = captain.MountAgent;

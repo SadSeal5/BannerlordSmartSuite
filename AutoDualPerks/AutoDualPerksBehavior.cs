@@ -91,18 +91,38 @@ namespace BannerlordSmartSuite
             if (hero == null || hero.HeroDeveloper == null) return;
             if (PerkObject.All == null) return;
 
-            foreach (PerkObject perk in PerkObject.All)
+            int grantMode = Settings.Instance.PerkGrantMode?.SelectedIndex ?? 0;
+
+            if (grantMode == 0)
             {
-                if (perk == null || perk.Skill == null) continue;
-                if (hero.GetSkillValue(perk.Skill) >= perk.RequiredSkillValue)
+                // Paired Choice (When Picked)
+                foreach (PerkObject perk in PerkObject.All)
                 {
-                    if (!hero.GetPerkValue(perk))
-                    {
-                        hero.HeroDeveloper.AddPerk(perk);
-                    }
-                    if (perk.AlternativePerk != null && !hero.GetPerkValue(perk.AlternativePerk))
+                    if (perk == null || perk.AlternativePerk == null || perk.AlternativePerk == perk) continue;
+
+                    if (hero.GetPerkValue(perk) && !hero.GetPerkValue(perk.AlternativePerk))
                     {
                         hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                    }
+                }
+            }
+            else
+            {
+                // Full Auto Unlock (By Skill Level)
+                foreach (PerkObject perk in PerkObject.All)
+                {
+                    if (perk == null || perk.Skill == null) continue;
+
+                    if (hero.GetSkillValue(perk.Skill) >= perk.RequiredSkillValue)
+                    {
+                        if (!hero.GetPerkValue(perk))
+                        {
+                            hero.HeroDeveloper.AddPerk(perk);
+                        }
+                        if (perk.AlternativePerk != null && perk.AlternativePerk != perk && !hero.GetPerkValue(perk.AlternativePerk))
+                        {
+                            hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                        }
                     }
                 }
             }
@@ -113,19 +133,39 @@ namespace BannerlordSmartSuite
             if (hero == null || hero.HeroDeveloper == null || skill == null) return;
             if (PerkObject.All == null) return;
 
+            int grantMode = Settings.Instance.PerkGrantMode?.SelectedIndex ?? 0;
             int skillValue = hero.GetSkillValue(skill);
-            foreach (PerkObject perk in PerkObject.All)
+
+            if (grantMode == 0)
             {
-                if (perk == null || perk.Skill != skill) continue;
-                if (skillValue >= perk.RequiredSkillValue)
+                // Paired Choice (When Picked)
+                foreach (PerkObject perk in PerkObject.All)
                 {
-                    if (!hero.GetPerkValue(perk))
-                    {
-                        hero.HeroDeveloper.AddPerk(perk);
-                    }
-                    if (perk.AlternativePerk != null && !hero.GetPerkValue(perk.AlternativePerk))
+                    if (perk == null || perk.Skill != skill || perk.AlternativePerk == null || perk.AlternativePerk == perk) continue;
+
+                    if (hero.GetPerkValue(perk) && !hero.GetPerkValue(perk.AlternativePerk))
                     {
                         hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                    }
+                }
+            }
+            else
+            {
+                // Full Auto Unlock (By Skill Level)
+                foreach (PerkObject perk in PerkObject.All)
+                {
+                    if (perk == null || perk.Skill != skill) continue;
+
+                    if (skillValue >= perk.RequiredSkillValue)
+                    {
+                        if (!hero.GetPerkValue(perk))
+                        {
+                            hero.HeroDeveloper.AddPerk(perk);
+                        }
+                        if (perk.AlternativePerk != null && perk.AlternativePerk != perk && !hero.GetPerkValue(perk.AlternativePerk))
+                        {
+                            hero.HeroDeveloper.AddPerk(perk.AlternativePerk);
+                        }
                     }
                 }
             }

@@ -12,14 +12,27 @@ namespace BannerlordSmartSuite
         protected override void OnSubModuleLoad()
         {
             base.OnSubModuleLoad();
-            try
+            var harmony = new Harmony("com.sadseal5.bannerlord.smartsuite");
+
+            Type[] patchClasses = new Type[]
             {
-                new Harmony("com.sadseal5.bannerlord.smartsuite").PatchAll();
-                Debug.Print("[BannerlordSmartSuite] Harmony patches initialized successfully.");
-            }
-            catch (Exception ex)
+                typeof(OrderOfBattlePatch),
+                typeof(OrderOfBattleAutoDeployPatch),
+                typeof(PerkVMHasAlternativeAndSelectedPatch),
+                typeof(HeroDeveloperAddPerkPatch)
+            };
+
+            foreach (Type patchClass in patchClasses)
             {
-                Debug.Print("[BannerlordSmartSuite] Error initializing Harmony patches: " + ex);
+                try
+                {
+                    harmony.CreateClassProcessor(patchClass).Patch();
+                    Debug.Print($"[BannerlordSmartSuite] Harmony patch '{patchClass.Name}' applied successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.Print($"[BannerlordSmartSuite] Error applying Harmony patch '{patchClass.Name}': {ex}");
+                }
             }
         }
 

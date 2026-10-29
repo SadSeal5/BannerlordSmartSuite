@@ -129,27 +129,67 @@ namespace BannerlordSmartSuite
                     formationItem.UnassignCaptain();
                 }
 
-                // Assign the hero as captain
-                if (heroItem.Agent != null)
+                // Try assigning captain via reflection on OrderOfBattleVM resiliently
+                bool methodInvoked = false;
+                try
+                {
+                    var mHero = Traverse.Create(vm).Method("AssignCaptain", heroItem, formationItem);
+                    if (mHero.MethodExists())
+                    {
+                        mHero.GetValue();
+                        methodInvoked = true;
+                    }
+                }
+                catch {}
+
+                if (!methodInvoked && heroItem.Agent != null)
                 {
                     try
                     {
-                        Traverse.Create(vm).Method("AssignCaptain", heroItem.Agent, formationItem).GetValue();
+                        var mAgent = Traverse.Create(vm).Method("AssignCaptain", heroItem.Agent, formationItem);
+                        if (mAgent.MethodExists())
+                        {
+                            mAgent.GetValue();
+                            methodInvoked = true;
+                        }
                     }
-                    catch
-                    {
-                        formationItem.Captain = heroItem;
-                    }
+                    catch {}
                 }
-                else
-                {
-                    formationItem.Captain = heroItem;
-                }
+
+                // Always ensure VM states are synchronized
+                formationItem.Captain = heroItem;
+                heroItem.SetAssignedFormationItem(formationItem);
             }
             catch (Exception ex)
             {
                 TaleWorlds.Library.Debug.Print("[BannerlordSmartSuite] Error in AssignCaptainSafe: " + ex);
             }
+        }
+    }
+
+    public static class OrderOfBattleExtensions
+    {
+        public static void SetAssignedFormationItem(this OrderOfBattleHeroItemVM heroItem, OrderOfBattleFormationItemVM formationItem)
+        {
+            if (heroItem == null) return;
+            try
+            {
+                var method = Traverse.Create(heroItem).Method("SetAssignedFormationItem", formationItem);
+                if (method.MethodExists())
+                {
+                    method.GetValue();
+                    return;
+                }
+            }
+            catch {}
+
+            try
+            {
+                heroItem.CurrentAssignedFormationItem = formationItem;
+                heroItem.IsLeadingAFormation = true;
+                heroItem.IsAssignedToAFormation = true;
+            }
+            catch {}
         }
     }
 

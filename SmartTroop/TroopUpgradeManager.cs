@@ -118,19 +118,6 @@ namespace BannerlordSmartSuite
                         continue;
                     }
 
-                    int baseXpCost = troop.GetUpgradeXpCost(mainParty.Party, 0);
-                    if (baseXpCost <= 0)
-                    {
-                        continue;
-                    }
-
-                    int readyCount = element.Xp / baseXpCost;
-                    readyCount = Math.Min(readyCount, element.Number);
-                    if (readyCount <= 0)
-                    {
-                        continue;
-                    }
-
                     // Check if any upgrade branch is cavalry and whether horses are insufficient
                     bool hasCavalryTarget = false;
                     bool cavalryTargetBlockedByHorses = false;
@@ -168,6 +155,7 @@ namespace BannerlordSmartSuite
                     float bestScore = float.MinValue;
                     int bestGoldCost = 0;
                     int bestXpCost = 0;
+                    int bestReadyCount = 0;
                     ItemCategory bestReqCategory = null;
                     int bestAvailHorses = 0;
 
@@ -175,6 +163,23 @@ namespace BannerlordSmartSuite
                     {
                         CharacterObject target = troop.UpgradeTargets[tIdx];
                         if (target == null) continue;
+
+                        if (!settings.AllowBanditUpgradesWithoutPerk)
+                        {
+                            bool canUpgrade = Campaign.Current?.Models?.PartyTroopUpgradeModel?.CanTroopBeUpgraded(mainParty.Party, troop, target) ?? true;
+                            if (!canUpgrade)
+                            {
+                                continue;
+                            }
+                        }
+
+                        int targetXpCost = troop.GetUpgradeXpCost(mainParty.Party, tIdx);
+                        int readyCount = targetXpCost > 0 ? element.Xp / targetXpCost : 0;
+                        readyCount = Math.Min(readyCount, element.Number);
+                        if (readyCount <= 0)
+                        {
+                            continue;
+                        }
 
                         TroopRole targetRole = TroopClassifier.Classify(target);
 
@@ -197,12 +202,6 @@ namespace BannerlordSmartSuite
                             continue;
                         }
 
-                        int unitXpCost = troop.GetUpgradeXpCost(mainParty.Party, tIdx);
-                        if (unitXpCost <= 0)
-                        {
-                            unitXpCost = baseXpCost;
-                        }
-
                         // Score calculation
                         float deficitScore = (deficits.TryGetValue(targetRole, out int def) && def > 0) ? (def + 1f) : 0.2f;
                         float cultureMultiplier = GetCultureMultiplier(target, targetRole, settings);
@@ -217,7 +216,8 @@ namespace BannerlordSmartSuite
                             bestTargetIndex = tIdx;
                             bestRole = targetRole;
                             bestGoldCost = unitGoldCost;
-                            bestXpCost = unitXpCost;
+                            bestXpCost = targetXpCost;
+                            bestReadyCount = readyCount;
                             bestReqCategory = reqCat;
                             bestAvailHorses = availHorses;
                         }
@@ -225,7 +225,7 @@ namespace BannerlordSmartSuite
 
                     if (bestTarget != null && bestTargetIndex >= 0)
                     {
-                        int countToUpgrade = readyCount;
+                        int countToUpgrade = bestReadyCount;
 
                         if (bestGoldCost > 0)
                         {
@@ -241,7 +241,7 @@ namespace BannerlordSmartSuite
 
                         if (countToUpgrade > 0)
                         {
-                            int totalXpCost = countToUpgrade * bestXpCost;
+                            int totalXpCost = Math.Min(element.Xp, countToUpgrade * bestXpCost);
                             int totalGold = countToUpgrade * bestGoldCost;
 
                             memberRoster.AddToCounts(troop, -countToUpgrade, false, 0, -totalXpCost);
@@ -354,22 +354,37 @@ namespace BannerlordSmartSuite
                 return;
             }
 
-            int needed = count;
-            for (int i = 0; i < party.ItemRoster.Count && needed > 0; i++)
+            var matchingElements = new List<ItemRosterElement>();
+            for (int i = 0; i < party.ItemRoster.Count; i++)
             {
-                ItemRosterElement element = party.ItemRoster.GetElementCopyAtIndex(i);
-                ItemObject item = element.EquipmentElement.Item;
-                if (item != null && item.ItemCategory == category)
+                ItemRosterElement el = party.ItemRoster.GetElementCopyAtIndex(i);
+                ItemObject item = el.EquipmentElement.Item;
+                if (item != null && item.ItemCategory == category && el.Amount > 0)
                 {
                     if (respectLocked && lockedItemIds != null && item.StringId != null && lockedItemIds.Contains(item.StringId))
                     {
                         continue;
                     }
-
-                    int toRemove = Math.Min(element.Amount, needed);
-                    party.ItemRoster.AddToCounts(element.EquipmentElement, -toRemove);
-                    needed -= toRemove;
+                    matchingElements.Add(el);
                 }
+            }
+
+            if (Settings.Instance.ConsumeCheapestHorsesFirst)
+            {
+                matchingElements.Sort((a, b) => a.EquipmentElement.Item.Value.CompareTo(b.EquipmentElement.Item.Value));
+            }
+
+            int needed = count;
+            foreach (var element in matchingElements)
+            {
+                if (needed <= 0) break;
+
+                int currentAmount = party.ItemRoster.GetItemNumber(element.EquipmentElement.Item);
+                if (currentAmount <= 0) continue;
+
+                int toRemove = Math.Min(currentAmount, needed);
+                party.ItemRoster.AddToCounts(element.EquipmentElement, -toRemove);
+                needed -= toRemove;
             }
         }
 
@@ -425,6 +440,22 @@ namespace BannerlordSmartSuite
             {
             }
             return locked;
+        }
+    }
+
+    public static class TroopUpgradeModelExtensions
+    {
+        public static bool CanTroopBeUpgraded(this TaleWorlds.CampaignSystem.ComponentInterfaces.PartyTroopUpgradeModel model, PartyBase party, CharacterObject troop, CharacterObject target)
+        {
+            if (model == null) return true;
+            try
+            {
+                return model.CanPartyUpgradeTroopToTarget(party, troop, target);
+            }
+            catch
+            {
+                return true;
+            }
         }
     }
 }

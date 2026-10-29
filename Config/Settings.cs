@@ -35,6 +35,10 @@ namespace BannerlordSmartSuite
         [SettingPropertyGroup("General")]
         public bool ModEnabled { get; set; } = true;
 
+        [SettingPropertyBool("Debug Logging", Order = 1, RequireRestart = false, HintText = "Enable detailed logging to Bannerlord debug stream.")]
+        [SettingPropertyGroup("General")]
+        public bool DebugLogging { get; set; } = false;
+
         #endregion
 
         #region 1. Smart Captain
@@ -59,6 +63,10 @@ namespace BannerlordSmartSuite
         [SettingPropertyGroup("1. Smart Captain")]
         public bool DismountMountedInfantryCaptains { get; set; } = true;
 
+        [SettingPropertyBool("Dismount Player If Infantry Captain", Order = 5, RequireRestart = false, HintText = "Allow forcibly dismounting the player if player character is captain of an infantry formation.")]
+        [SettingPropertyGroup("1. Smart Captain")]
+        public bool DismountPlayerIfInfantryCaptain { get; set; } = false;
+
         #endregion
 
         #region 2. Auto Settlement Builder
@@ -82,6 +90,14 @@ namespace BannerlordSmartSuite
         [SettingPropertyFloatingInteger("Security Critical Threshold", 0f, 100f, "#0", Order = 4, RequireRestart = false, HintText = "Security threshold below which security buildings are prioritized.")]
         [SettingPropertyGroup("2. Auto Settlement Builder")]
         public float SecurityCriticalThreshold { get; set; } = 40f;
+
+        [SettingPropertyDropdown("Default Daily Project", Order = 5, RequireRestart = false, HintText = "Baseline daily project when settlement is healthy and has no crises.")]
+        [SettingPropertyGroup("2. Auto Settlement Builder")]
+        public Dropdown<string> DefaultDailyProject { get; set; } = new Dropdown<string>(new string[] { "Housing", "Militia", "Irrigation", "Festivals", "KeepCurrent" }, 0);
+
+        [SettingPropertyInteger("Max Building Queue Depth", 1, 3, "0", Order = 6, RequireRestart = false, HintText = "Maximum number of buildings allowed in the construction queue.")]
+        [SettingPropertyGroup("2. Auto Settlement Builder")]
+        public int MaxBuildingQueueDepth { get; set; } = 1;
 
         #endregion
 
@@ -147,6 +163,14 @@ namespace BannerlordSmartSuite
         [SettingPropertyGroup("3. Smart Troop Upgrade")]
         public Dropdown<string> ShockCulturePriority { get; set; } = new Dropdown<string>(new string[] { "Sturgia", "Battania", "Empire", "Aserai", "Vlandia", "Khuzait" }, 0);
 
+        [SettingPropertyBool("Allow Bandit Upgrades Without Perk", Order = 15, RequireRestart = false, HintText = "Allow upgrading bandit/outlaw troops without the Veteran's Respect Leadership perk.")]
+        [SettingPropertyGroup("3. Smart Troop Upgrade")]
+        public bool AllowBanditUpgradesWithoutPerk { get; set; } = false;
+
+        [SettingPropertyBool("Consume Cheapest Horses First", Order = 16, RequireRestart = false, HintText = "Sort inventory mounts by value and consume lowest-value horses first when upgrading cavalry.")]
+        [SettingPropertyGroup("3. Smart Troop Upgrade")]
+        public bool ConsumeCheapestHorsesFirst { get; set; } = true;
+
         #endregion
 
         #region 4. Auto Dual Perks
@@ -162,6 +186,10 @@ namespace BannerlordSmartSuite
         [SettingPropertyBool("Apply To Companions", Order = 2, RequireRestart = false, HintText = "Grant dual perks to companion heroes and clan members.")]
         [SettingPropertyGroup("4. Auto Dual Perks")]
         public bool DualPerksApplyToCompanions { get; set; } = false;
+
+        [SettingPropertyDropdown("Perk Grant Mode", Order = 3, RequireRestart = false, HintText = "Paired Choice grants the counterpart when a perk is chosen. Full Auto grants all perks matching skill requirement.")]
+        [SettingPropertyGroup("4. Auto Dual Perks")]
+        public Dropdown<string> PerkGrantMode { get; set; } = new Dropdown<string>(new string[] { "Paired Choice (When Picked)", "Full Auto Unlock (By Skill Level)" }, 0);
 
         #endregion
     }
