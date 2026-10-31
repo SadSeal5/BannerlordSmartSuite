@@ -28,7 +28,7 @@ namespace BannerlordSmartSuite
                 return 0;
             }
 
-            Hero mainHero = Hero.MainHero;
+            Hero mainHero = CampaignSafe.MainHero;
             if (mainHero == null)
             {
                 return 0;

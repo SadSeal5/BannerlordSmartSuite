@@ -19,7 +19,8 @@ namespace BannerlordSmartSuite
             if (settlement == null || !settlement.IsFortification || settlement.Town == null)
                 return;
 
-            if (settlement.OwnerClan != Clan.PlayerClan)
+            Clan playerClan = CampaignSafe.PlayerClan;
+            if (playerClan == null || settlement.OwnerClan != playerClan)
                 return;
 
             if (!Settings.Instance.ModEnabled || !Settings.Instance.AutoSettlementBuilderEnabled)
@@ -38,7 +39,8 @@ namespace BannerlordSmartSuite
 
         private void OnBuildingLevelChanged(Town town, Building building, int levelChange)
         {
-            if (town == null || town.OwnerClan != Clan.PlayerClan)
+            Clan playerClan = CampaignSafe.PlayerClan;
+            if (town == null || playerClan == null || town.OwnerClan != playerClan)
                 return;
 
             if (!Settings.Instance.ModEnabled || !Settings.Instance.AutoSettlementBuilderEnabled)

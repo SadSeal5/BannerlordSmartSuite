@@ -53,13 +53,20 @@ namespace BannerlordSmartSuite
             if (hero == null || skill == null || !Settings.Instance.ModEnabled || !Settings.Instance.AutoDualPerksEnabled)
                 return;
 
-            bool isPlayer = (hero == Hero.MainHero);
-            bool isCompanionOrClan = (hero != Hero.MainHero && (hero.IsPlayerCompanion || hero.Clan == Clan.PlayerClan));
-
-            if ((isPlayer && Settings.Instance.DualPerksApplyToPlayer) ||
-                (isCompanionOrClan && Settings.Instance.DualPerksApplyToCompanions))
+            try
             {
-                CheckAndGrantPerksForSkill(hero, skill);
+                bool isPlayer = CampaignSafe.IsPlayer(hero);
+                bool isCompanionOrClan = CampaignSafe.IsCompanionOrClan(hero);
+
+                if ((isPlayer && Settings.Instance.DualPerksApplyToPlayer) ||
+                    (isCompanionOrClan && Settings.Instance.DualPerksApplyToCompanions))
+                {
+                    CheckAndGrantPerksForSkill(hero, skill);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Print("[BannerlordSmartSuite] Error in OnHeroGainedSkill: " + ex.Message);
             }
         }
 
@@ -68,34 +75,43 @@ namespace BannerlordSmartSuite
             if (!Settings.Instance.ModEnabled || !Settings.Instance.AutoDualPerksEnabled)
                 return;
 
-            if (Settings.Instance.DualPerksApplyToPlayer && Hero.MainHero != null)
+            try
             {
-                CheckAndGrantAllPerks(Hero.MainHero);
+                Hero mainHero = CampaignSafe.MainHero;
+                if (Settings.Instance.DualPerksApplyToPlayer && mainHero != null)
+                {
+                    CheckAndGrantAllPerks(mainHero);
+                }
+
+                Clan playerClan = CampaignSafe.PlayerClan;
+                if (Settings.Instance.DualPerksApplyToCompanions && playerClan != null)
+                {
+                    if (playerClan.Heroes != null)
+                    {
+                        foreach (Hero hero in playerClan.Heroes)
+                        {
+                            if (hero != null && hero != mainHero && hero.IsAlive)
+                            {
+                                CheckAndGrantAllPerks(hero);
+                            }
+                        }
+                    }
+
+                    if (playerClan.Companions != null)
+                    {
+                        foreach (Hero companion in playerClan.Companions)
+                        {
+                            if (companion != null && companion.IsAlive)
+                            {
+                                CheckAndGrantAllPerks(companion);
+                            }
+                        }
+                    }
+                }
             }
-
-            if (Settings.Instance.DualPerksApplyToCompanions && Clan.PlayerClan != null)
+            catch (Exception ex)
             {
-                if (Clan.PlayerClan.Heroes != null)
-                {
-                    foreach (Hero hero in Clan.PlayerClan.Heroes)
-                    {
-                        if (hero != null && hero != Hero.MainHero && hero.IsAlive)
-                        {
-                            CheckAndGrantAllPerks(hero);
-                        }
-                    }
-                }
-
-                if (Clan.PlayerClan.Companions != null)
-                {
-                    foreach (Hero companion in Clan.PlayerClan.Companions)
-                    {
-                        if (companion != null && companion.IsAlive)
-                        {
-                            CheckAndGrantAllPerks(companion);
-                        }
-                    }
-                }
+                Debug.Print("[BannerlordSmartSuite] Error in CheckAndGrantEligibleHeroes: " + ex.Message);
             }
         }
 

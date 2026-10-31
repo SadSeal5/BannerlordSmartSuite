@@ -36,15 +36,16 @@ namespace BannerlordSmartSuite
                 return;
             }
 
+            Clan playerClan = CampaignSafe.PlayerClan;
             if (party == MobileParty.MainParty)
             {
                 TroopUpgradeManager.RunUpgradeForParty(party);
             }
-            else if (Settings.Instance.UpgradeClanParties && party.ActualClan == Clan.PlayerClan && !party.IsGarrison)
+            else if (Settings.Instance.UpgradeClanParties && playerClan != null && party.ActualClan == playerClan && !party.IsGarrison)
             {
                 TroopUpgradeManager.RunUpgradeForParty(party);
             }
-            else if (Settings.Instance.UpgradeGarrisons && party.IsGarrison && (party.ActualClan == Clan.PlayerClan || party.CurrentSettlement?.OwnerClan == Clan.PlayerClan))
+            else if (Settings.Instance.UpgradeGarrisons && party.IsGarrison && playerClan != null && (party.ActualClan == playerClan || party.CurrentSettlement?.OwnerClan == playerClan))
             {
                 TroopUpgradeManager.RunUpgradeForParty(party);
             }

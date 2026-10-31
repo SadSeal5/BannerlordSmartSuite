@@ -43,29 +43,36 @@ namespace BannerlordSmartSuite
                 return;
             }
 
-            Hero hero = __instance?.Hero;
-            if (hero == null || perk == null || perk.AlternativePerk == null || perk.AlternativePerk == perk)
+            try
             {
-                return;
+                Hero hero = __instance?.Hero;
+                if (hero == null || perk == null || perk.AlternativePerk == null || perk.AlternativePerk == perk)
+                {
+                    return;
+                }
+
+                bool isPlayer = CampaignSafe.IsPlayer(hero);
+                bool isCompanionOrClan = CampaignSafe.IsCompanionOrClan(hero);
+
+                bool shouldApply = (isPlayer && Settings.Instance.DualPerksApplyToPlayer) ||
+                                   (isCompanionOrClan && Settings.Instance.DualPerksApplyToCompanions);
+
+                if (shouldApply && !hero.GetPerkValue(perk.AlternativePerk))
+                {
+                    try
+                    {
+                        _isGrantingAlternative = true;
+                        __instance.AddPerk(perk.AlternativePerk);
+                    }
+                    finally
+                    {
+                        _isGrantingAlternative = false;
+                    }
+                }
             }
-
-            bool isPlayer = (hero == Hero.MainHero);
-            bool isCompanionOrClan = (hero != Hero.MainHero && (hero.IsPlayerCompanion || hero.Clan == Clan.PlayerClan));
-
-            bool shouldApply = (isPlayer && Settings.Instance.DualPerksApplyToPlayer) ||
-                               (isCompanionOrClan && Settings.Instance.DualPerksApplyToCompanions);
-
-            if (shouldApply && !hero.GetPerkValue(perk.AlternativePerk))
+            catch (Exception ex)
             {
-                try
-                {
-                    _isGrantingAlternative = true;
-                    __instance.AddPerk(perk.AlternativePerk);
-                }
-                finally
-                {
-                    _isGrantingAlternative = false;
-                }
+                TaleWorlds.Library.Debug.Print("[BannerlordSmartSuite] Error in HeroDeveloperAddPerkPatch: " + ex.Message);
             }
         }
     }
