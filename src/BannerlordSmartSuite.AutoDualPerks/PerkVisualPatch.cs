@@ -1,10 +1,13 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ViewModelCollection.CharacterDeveloper;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.AutoDualPerks
 {
     [HarmonyPatch(typeof(PerkVM), "get__hasAlternativeAndSelected")]
     public static class PerkVMHasAlternativeAndSelectedPatch

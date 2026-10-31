@@ -1,8 +1,11 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.SmartTroop
 {
     public static class TroopClassifier
     {

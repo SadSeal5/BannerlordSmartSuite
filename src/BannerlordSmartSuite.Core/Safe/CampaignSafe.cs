@@ -2,7 +2,7 @@ using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.Core.Safe
 {
     public static class CampaignSafe
     {

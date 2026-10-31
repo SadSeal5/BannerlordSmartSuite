@@ -1,10 +1,13 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Library;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.AutoSettlement
 {
     public class AutoSettlementBehavior : CampaignBehaviorBase
     {

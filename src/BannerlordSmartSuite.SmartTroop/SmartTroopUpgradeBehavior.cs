@@ -1,3 +1,6 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameState;
@@ -7,7 +10,7 @@ using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.ScreenSystem;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.SmartTroop
 {
     public class SmartTroopUpgradeBehavior : CampaignBehaviorBase
     {

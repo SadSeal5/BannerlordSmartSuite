@@ -1,3 +1,6 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -5,7 +8,7 @@ using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.MountAndBlade.ViewModelCollection.OrderOfBattle;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.SmartCaptain
 {
     public static class FormationMatcher
     {

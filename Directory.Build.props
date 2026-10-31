@@ -1,12 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+<Project>
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <OutputPath>bin\Win64_Shipping_Client\</OutputPath>
+    <OutputPath>..\..\bin\Win64_Shipping_Client\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Nullable>disable</Nullable>
-    <AssemblyName>BannerlordSmartSuite</AssemblyName>
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
   </PropertyGroup>
 
@@ -68,5 +66,4 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
-
 </Project>

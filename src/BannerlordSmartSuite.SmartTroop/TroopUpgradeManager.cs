@@ -1,3 +1,6 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -6,7 +9,7 @@ using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.SmartTroop
 {
     public static class TroopUpgradeManager
     {

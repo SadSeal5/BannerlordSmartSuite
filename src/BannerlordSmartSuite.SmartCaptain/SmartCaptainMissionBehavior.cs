@@ -1,10 +1,13 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.SmartCaptain
 {
     public class SmartCaptainMissionBehavior : MissionBehavior
     {

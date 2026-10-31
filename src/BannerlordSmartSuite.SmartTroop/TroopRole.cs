@@ -1,4 +1,7 @@
-namespace BannerlordSmartSuite
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
+namespace BannerlordSmartSuite.SmartTroop
 {
     public enum TroopRole
     {

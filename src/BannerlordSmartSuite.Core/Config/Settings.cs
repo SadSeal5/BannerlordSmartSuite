@@ -4,7 +4,7 @@ using MCM.Abstractions.Attributes;
 using MCM.Abstractions.Attributes.v2;
 using MCM.Common;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.Core.Config
 {
     public class Settings : AttributeGlobalSettings<Settings>
     {

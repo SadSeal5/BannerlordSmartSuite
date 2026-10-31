@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>BannerlordSmartSuite.SmartTroop</AssemblyName>
+    <RootNamespace>BannerlordSmartSuite.SmartTroop</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BannerlordSmartSuite.Core\BannerlordSmartSuite.Core.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

@@ -1,7 +1,7 @@
 <Module>
   <Name value="Bannerlord Smart Suite" />
   <Id value="BannerlordSmartSuite" />
-  <Version value="v1.2.1" />
+  <Version value="v1.3.0" />
   <SingleplayerModule value="true" />
   <MultiplayerModule value="false" />
   <DependedModules>
@@ -15,8 +15,8 @@
   <SubModules>
     <SubModule>
       <Name value="BannerlordSmartSuite" />
-      <DLLName value="BannerlordSmartSuite.dll" />
-      <SubModuleClassType value="BannerlordSmartSuite.SubModule" />
+      <DLLName value="BannerlordSmartSuite.Core.dll" />
+      <SubModuleClassType value="BannerlordSmartSuite.Core.CoreSubModule" />
       <Tags>
         <Tag key="DedicatedServerType" value="none" />
         <Tag key="IsNoRenderModeElement" value="false" />

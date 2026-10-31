@@ -1,9 +1,12 @@
+﻿using BannerlordSmartSuite.Core.Config;
+using BannerlordSmartSuite.Core.Safe;
+using BannerlordSmartSuite.Core.Logging;
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using TaleWorlds.MountAndBlade.ViewModelCollection.OrderOfBattle;
 
-namespace BannerlordSmartSuite
+namespace BannerlordSmartSuite.SmartCaptain
 {
     [HarmonyPatch(typeof(OrderOfBattleVM), "SetInitialHeroFormations")]
     public static class OrderOfBattlePatch
